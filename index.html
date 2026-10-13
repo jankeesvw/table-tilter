@@ -1072,7 +1072,38 @@
     }
 
     function probeerStart() {
-      if ((toestand === 'start' || toestand === 'gameover') && performance.now() > wachtOpStart) startSpel();
+      if ((toestand === 'start' || toestand === 'gameover') && performance.now() > wachtOpStart) {
+        vraagKantelSensor();
+        startSpel();
+        kantelSensor.nul = null;   // de stand waarin je je telefoon nu vasthoudt is 'plat'
+      }
+    }
+
+    // ---------- Kantelsensor van je telefoon of tablet ----------
+    // Kantel je telefoon en de tafel kantelt mee. De stand bij het starten telt als plat.
+    const kantelSensor = { actief: false, nul: null, x: 0, y: 0 };
+    function vraagKantelSensor() {
+      if (kantelSensor.gevraagd || !window.DeviceOrientationEvent) return;
+      kantelSensor.gevraagd = true;
+      const luister = () => window.addEventListener('deviceorientation', e => {
+        if (e.beta === null || e.gamma === null) return;
+        // naar de stand van het scherm omrekenen (staand of liggend)
+        const hoek = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+        let x = e.gamma, y = e.beta;
+        if (hoek === 90) { x = e.beta; y = -e.gamma; }
+        else if (hoek === -90 || hoek === 270) { x = -e.beta; y = e.gamma; }
+        else if (hoek === 180) { x = -e.gamma; y = -e.beta; }
+        if (!kantelSensor.nul) kantelSensor.nul = { x, y };
+        kantelSensor.x = x - kantelSensor.nul.x;
+        kantelSensor.y = y - kantelSensor.nul.y;
+        kantelSensor.actief = true;
+      });
+      // iPhone en iPad vragen eerst toestemming
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(antwoord => { if (antwoord === 'granted') luister(); }).catch(() => {});
+      } else {
+        luister();
+      }
     }
     window.addEventListener('keydown', probeerStart);
     canvas.addEventListener('pointerdown', probeerStart);
@@ -1111,6 +1142,14 @@
         const doelZ = -zacht(vinger.x - vinger.startX) * MAX_KANTEL;
         const doelX = -zacht(vinger.y - vinger.startY) * MAX_KANTEL;
         const f = Math.min(1, 12 * dt);
+        kantelZ += (doelZ - kantelZ) * f;
+        kantelX += (doelX - kantelX) * f;
+      } else if (kantelSensor.actief && !(links || rechts || op || neer)) {
+        // telefoon naar rechts kantelen = bal naar rechts, bovenkant van je af = bal naar achteren
+        const graden = Math.PI / 180;
+        const doelZ = -BABYLON.Scalar.Clamp(kantelSensor.x * graden * 1.3, -MAX_KANTEL, MAX_KANTEL);
+        const doelX = -BABYLON.Scalar.Clamp(kantelSensor.y * graden * 1.3, -MAX_KANTEL, MAX_KANTEL);
+        const f = Math.min(1, 10 * dt);
         kantelZ += (doelZ - kantelZ) * f;
         kantelX += (doelX - kantelX) * f;
       }
