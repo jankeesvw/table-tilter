@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#3d6b2a">
   <title>Table Tilter</title>
   <meta name="description" content="Retro arcade game: tilt the table and roll the ball, a D20 or a teapot into the golden hole. 100 levels.">
   <meta property="og:type" content="website">
@@ -17,7 +18,8 @@
   <meta name="twitter:image" content="https://jankeesvw.github.io/table-tilter/og-image.png">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #fff; font-family: 'Press Start 2P', monospace; }
-    canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; image-rendering: pixelated; }
+    /* het spel loopt door tot onder de statusbalk van een telefoon */
+    canvas { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100lvh; outline: none; touch-action: none; image-rendering: pixelated; }
     /* Arcade-scorebord bovenin */
     html, body { overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     /* Alles schaalt mee met het scherm, en blijft uit de inkeping en de hoeken van een telefoon */
@@ -1317,6 +1319,22 @@
       uitleg.textContent = 'PRESS ANY KEY OR TAP TO START';
       scene.onBeforeRenderObservable.add(() => update(Math.min(engine.getDeltaTime() / 1000, 0.05)));
       engine.runRenderLoop(() => scene.render());
+
+      // De balk van de browser bovenin krijgt de kleur van de bovenkant van het spel, dus geen zwarte rand
+      const kleurPrikker = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+      kleurPrikker.canvas.width = kleurPrikker.canvas.height = 1;
+      const themaKleur = document.querySelector('meta[name="theme-color"]');
+      let beeldjes = 0;
+      scene.onAfterRenderObservable.add(() => {
+        if (beeldjes++ % 30) return;
+        try {
+          kleurPrikker.drawImage(canvas, canvas.width / 2, 1, 1, 1, 0, 0, 1, 1);
+          const [r, g, b] = kleurPrikker.getImageData(0, 0, 1, 1).data;
+          const kleur = `rgb(${r}, ${g}, ${b})`;
+          themaKleur.setAttribute('content', kleur);
+          document.documentElement.style.background = document.body.style.background = kleur;
+        } catch (e) {}
+      });
     });
   </script>
 </body>
