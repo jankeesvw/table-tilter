@@ -106,12 +106,12 @@
     });
 
     // Camera kijkt schuin van voren op de tafel (niet zelf te draaien)
-    const camera = new BABYLON.ArcRotateCamera('camera', -Math.PI / 2, 0.8, 19, new BABYLON.Vector3(0, -0.5, 0), scene);
+    const camera = new BABYLON.ArcRotateCamera('camera', -Math.PI / 2, 0.8, 16, new BABYLON.Vector3(0, -0.5, 0), scene);
     // Op een staand scherm zou de tafel aan de zijkanten wegvallen: dan houden we de breedte vast
     function pasCameraAan() {
       const staand = window.innerWidth < window.innerHeight * 1.1;
       camera.fovMode = staand ? BABYLON.Camera.FOVMODE_HORIZONTAL_FIXED : BABYLON.Camera.FOVMODE_VERTICAL_FIXED;
-      camera.fov = staand ? 0.95 : 0.8;
+      camera.fov = staand ? 0.85 : 0.8;
     }
     pasCameraAan();
 
