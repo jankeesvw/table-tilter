@@ -304,7 +304,7 @@
       });
       const donut = BABYLON.MeshBuilder.CreateTorus('donut', { diameter: 0.7, thickness: 0.32, tessellation: 40 }, scene);
       donut.material = vormMateriaal('donutMat', plaatje, { ruw: 0.4 });
-      nieuweVorm('donut', donut, { grip: 0.8 });
+      nieuweVorm('donut', donut, { grip: 0.3 });   // glijdt rustig in plaats van ineens weg te schieten
     }
 
     // Blikje frisdrank: rolt alleen dwars, en staat hij rechtop dan glijdt hij
@@ -543,14 +543,14 @@
         bal: { vorm: 'd20' },
         achtergrond: { lucht: 'skybox2', grond: { kleur: '#1a1a22', ruw: 0.4, lak: true } },
         blok: { kleur: '#ffffff', ruw: 0.2, lak: true } },
-      { naam: 'Candy Shop', tafel: { kleur: '#f8bbd0', ruw: 0.3, lak: true },
-        bal: { vorm: 'donut' },
-        achtergrond: { lucht: 'skybox', grond: { kleur: '#fff3e0', ruw: 0.8 } },
-        blok: { kleur: '#7e57c2', ruw: 0.2, lak: true } },
       { naam: 'Desert',  tafel: { hout: 'sand.jpg', herhaal: 2, ruw: 1 },
         bal: { ontwerp: { soort: 'stippen', basis: '#c62828', kleur: '#ffffff' }, ruw: 0.9 },
         achtergrond: { grond: { hout: 'sand.jpg', herhaal: 30, ruw: 1 } },
         blok: { hout: 'rock.png', ruw: 0.9 } },
+      { naam: 'Candy Shop', tafel: { kleur: '#f8bbd0', ruw: 0.3, lak: true },
+        bal: { vorm: 'donut' },
+        achtergrond: { lucht: 'skybox', grond: { kleur: '#fff3e0', ruw: 0.8 } },
+        blok: { kleur: '#7e57c2', ruw: 0.2, lak: true } },
       { naam: 'Tea Party', tafel: { hout: 'wood.jpg', ruw: 0.4, lak: true },
         bal: { vorm: 'theepot' },
         achtergrond: { lucht: 'skybox', grond: { hout: 'grass.png', ruw: 1 } },
