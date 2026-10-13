@@ -24,6 +24,7 @@
     #hud { position: fixed; top: max(14px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
            display: flex; justify-content: space-between; gap: 8px; font-size: min(14px, 2.8vw); line-height: 1.8; pointer-events: none; text-shadow: 3px 3px 0 #000; }
     #hud .waarde { font-size: min(20px, 3.8vw); }
+    #bonusTekst { color: #b2ff59; }
     #hud #themaTekst { font-size: min(20px, 3vw); }
     #score { color: #ffeb3b; }
     #hi { color: #ff4081; text-align: center; }
@@ -63,7 +64,7 @@
   <canvas id="game"></canvas>
   <div id="hud">
     <div id="score">SCORE<br><span class="waarde" id="scoreTekst">000000</span><div id="levens"></div></div>
-    <div id="hi">HI-SCORE<br><span class="waarde" id="hiTekst">000000</span></div>
+    <div id="hi">HI-SCORE<br><span class="waarde" id="hiTekst">000000</span><br><span id="bonusTekst"></span></div>
     <div id="lvl"><span id="lvlTekst">LEVEL 01</span><br><span class="waarde" id="themaTekst"></span></div>
   </div>
   <div id="titel">TABLE<br>TILTER</div>
@@ -992,7 +993,15 @@
     let feest = { beweging: 'draai' };
 
     // Elke keer een ander feestje: andere beweging, andere deeltjes, andere tekst en ander deuntje
-    function startFeest(punten) {
+    // Tijdbonus: begint op 4000 en loopt elke seconde 100 punten terug, dus snel zijn loont
+    const MAX_BONUS = 4000;
+    const huidigeBonus = () => Math.max(0, Math.round(MAX_BONUS - (performance.now() - levelStart) / 10));
+    function toonBonus() {
+      const bonus = toestand === 'rollen' ? Math.floor(huidigeBonus() / 10) * 10 : null;
+      document.getElementById('bonusTekst').textContent = bonus === null ? '' : 'BONUS ' + bonus;
+    }
+
+    function startFeest(punten, bonus) {
       const plek = gat.getAbsolutePosition().clone();
       feest = { beweging: willekeurig(BEWEGINGEN) };
       willekeurig(Object.values(DEELTJES))(plek);
@@ -1000,7 +1009,8 @@
         straal.position.set(plek.x, plek.y + 15, plek.z);
         straal.setEnabled(true);
       }
-      meldingTekst.innerHTML = willekeurig(FEESTTEKSTEN) + '<br>+' + punten;
+      meldingTekst.innerHTML = willekeurig(FEESTTEKSTEN) + '<br>+' + punten
+        + (bonus > 0 ? '<br><span style="font-size: 0.5em; color: #b2ff59">TIME BONUS ' + bonus + '</span>' : '<br><span style="font-size: 0.5em">TOO SLOW FOR A BONUS</span>');
       meldingTekst.classList.remove(...TEKST_ANIMATIES);
       void meldingTekst.offsetWidth;   // animatie opnieuw laten beginnen
       meldingTekst.classList.add(willekeurig(TEKST_ANIMATIES));
@@ -1207,6 +1217,7 @@
       tafel.scaling.setAll(schaal);
 
       updatePijl(dt);
+      toonBonus();
 
       if (toestand === 'rollen') {
         // waar ligt de bal, bekeken vanaf de tafel?
@@ -1227,12 +1238,12 @@
           doelGat = gat.position;
           wachttijd = FEEST_DUUR;
           // punten: meer voor hogere levels, en een bonus als je snel was
-          const seconden = (performance.now() - levelStart) / 1000;
-          const punten = 500 * level + Math.max(0, Math.round(30 - seconden)) * 50;
+          const bonus = Math.floor(huidigeBonus() / 10) * 10;
+          const punten = 100 * level + bonus;
           score += punten;
           if (score > hiScore) { hiScore = score; try { localStorage.setItem('tafeltoller-hi', hiScore); } catch (e) {} }
           toonInfo();
-          startFeest(punten);
+          startFeest(punten, bonus);
           GELUID.raak();
         } else if (valgat) {
           // in een valgat: dit level opnieuw
